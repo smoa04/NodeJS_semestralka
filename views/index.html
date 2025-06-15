@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="IT služby">
+    <meta name="keywords" content="Sestavení PC, Servis PC, IT Poradna">
+    <meta name="author" content="Adam Smolka">
+    <link rel="stylesheet" href="/style.css">
+
+
+</head>
+<body>
+
+    <header>
+        <div id="navbar"></div>
+        <script>
+            fetch("/nav_bar")
+                .then(response => response.text())
+                .then(data => document.getElementById("navbar").innerHTML = data);
+        </script>
+
+
+    </header>
+
+<div class="sekce-sluzby">
+    <div class="vnitrni-sirka">
+        <h1 class="sekce-titulek">Vítejte u nás v obchodě</h1>
+
+        <div class="delici_cara"></div>
+        <div class="sluzby-container">
+
+            <a href="cpu.html">
+                <div class="sluzby-box">
+                    <div class="sluzby-titulek">Procesory</div>
+                    <br><br>
+                    <div class="sluzby-popisek">Moderní procesory značek AMD a Intel</div>
+                </div>
+            </a>
+
+            <a href="gpu.html">
+                <div class="sluzby-box">
+                    <div class="sluzby-titulek">Grafické karty</div>
+                    <br><br>
+                    <div class="sluzby-popisek">Výkonné grafické karty značek AMD a Nvidia</div>
+                </div>
+            </a>
+
+            <a href="cenik.html">
+                <div class="sluzby-box">
+                    <div class="sluzby-titulek">Technická podpora</div>
+                    <br><br>
+                    <div class="sluzby-popisek">Odborné IT poradenství. Poradíme vám s výběrem komponent.</div>
+                </div>
+            </a>
+
+        </div>
+    </div>
+
+</div>
+
+</body></html>

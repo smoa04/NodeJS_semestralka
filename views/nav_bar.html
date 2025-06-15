@@ -1,0 +1,15 @@
+<a class="logo" href="index.html">Komponator</a>
+<nav>
+    <ul class="nav_links">
+        <li><a href="cpu.html">CPU</a></li>
+        <li><a href="gpu.html">GPU</a></li>
+        <li><a href="cart.html">Košík</a></li>
+
+        <% if (user && user.username) { %>
+        <a href="/profile">Účet</a>
+        <% } else { %>
+        <a href="/login">Přihlásit se</a>
+        <% } %>
+
+    </ul>
+</nav>

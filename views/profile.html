@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil uživatele</title>
+    <link rel="stylesheet" href="/profile.css">
+
+</head>
+<body>
+
+<header>
+    <div id="navbar"></div>
+    <script>
+        fetch("/nav_bar") // Načítá vykreslenou verzi
+            .then(response => response.text())
+            .then(data => document.getElementById("navbar").innerHTML = data);
+    </script>
+</header>
+
+<div class="container">
+    <h1>Vítejte, <%= user.username %>!</h1>
+    <p>Vaše ID: <%= user.id %></p>
+    <p>Účet typu: <%= user.role %></p>
+
+    <h2>Osobní údaje</h2>
+
+    <ul>
+
+        <li><strong>Uživatelské jméno:</strong> <%= user.username %></li>
+        <li><strong>Jméno:</strong> <%= user.jmeno %></li>
+        <li><strong>Příjmení:</strong> <%= user.prijmeni %></li>
+        <li><strong>Město:</strong> <%= user.mesto %></li>
+        <li><strong>Ulice:</strong> <%= user.ulice %></li>
+        <li><strong>Telefon:</strong> <%= user.tel %></li>
+        <li><strong>Email:</strong> <%= user.email %></li>
+
+    </ul>
+
+
+    <h2>Historie objednávek</h2>
+
+    <% if (Array.isArray(allOrders)) { %>
+    <% } else { %>
+    <p>Data allOrders nejsou dostupná.</p>
+    <% } %>
+
+    <% if (user.role.trim() === "admin") { %>
+    <h3>Objednávky k vyřízení</h3>
+    <% if (allOrders.length > 0) { %>
+    <ul>
+        <% allOrders.forEach(order => { %>
+        <li id="admin-order-<%= order.id %>">
+            <strong>ID:</strong> <%= order.id %>,
+            <strong>Uživatel:</strong> <%= order.email %>,
+            <strong>Datum:</strong> <%= new Date(order.createdAt).toLocaleString() %>, <br>
+            <strong>Stav:</strong> <%= order.status %>,
+
+            <%
+            let totalPrice = 0;
+            JSON.parse(order.items).forEach(item => {
+            totalPrice += item.quantity * item.price;
+            });
+            %>
+
+            <ul>
+                <% JSON.parse(order.items).forEach(item => { %>
+                <li>
+                    <strong>Název:</strong> <%= item.name %>, <br>
+                    <strong>Množství:</strong> <%= item.quantity %>, <br>
+                    <strong>Cena:</strong> <%= item.price %> Kč <br>
+                </li>
+                <% }) %>
+            </ul>
+
+            <p><strong>Celková cena objednávky:</strong> <%= totalPrice %> Kč</p>
+
+            <% if (order.status === 'pending') { %>
+            <button class="profileButton" onclick="cancelOrder('<%= order.id %>')">Stornovat objednávku</button>
+            <button class="profileButton" onclick="completeOrder('<%= order.id %>')">Uzavřít objednávku</button>
+            <% } %>
+
+            <p>-------------------------------------------------------------</p>
+        </li>
+        <% }) %>
+    </ul>
+    <% } else { %>
+    <p>Žádné nové objednávky.</p>
+    <% } %>
+    <% } else { %>
+    <h3>Vaše objednávky</h3>
+    <% if (orders.length > 0) { %>
+    <ul>
+        <% orders.forEach(order => { %>
+        <li id="user-order-<%= order.id %>">
+            <strong>ID:</strong> <%= order.id %>,
+            <strong>Datum:</strong> <%= new Date(order.createdAt).toLocaleString() %>, <br>
+            <strong>Stav:</strong> <%= order.status %>,
+
+            <%
+            let totalPrice = 0;
+            JSON.parse(order.items).forEach(item => {
+            totalPrice += item.quantity * item.price;
+            });
+            %>
+
+            <ul>
+                <% JSON.parse(order.items).forEach(item => { %>
+                <li>
+                    <strong>Název:</strong> <%= item.name %>, <br>
+                    <strong>Množství:</strong> <%= item.quantity %>, <br>
+                    <strong>Cena:</strong> <%= item.price %> Kč <br>
+                </li>
+                <% }) %>
+            </ul>
+
+            <p><strong>Celková cena objednávky:</strong> <%= totalPrice %> Kč</p>
+
+            <% if (order.status === 'pending') { %>
+            <button class="profileButton" onclick="cancelOrder('<%= order.id %>')">Zrušit objednávku</button>
+            <% } %>
+
+            <p>-------------------------------------------------------------</p>
+        </li>
+        <% }) %>
+    </ul>
+    <% } else { %>
+    <p>Nemáte žádné objednávky.</p>
+    <% } %>
+    <% } %>
+
+
+
+    <script>
+        async function cancelOrder(orderId) {
+            const response = await fetch('/orders/cancel', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ orderId })
+            });
+
+            const text = await response.text();
+            try {
+                const data = JSON.parse(text);
+                alert(data.message); // Zobrazení odpovědi z backendu
+
+                if (response.ok) {
+                    location.reload(); // Obnovení stránky, aby se aktualizoval stav objednávky
+                }
+            } catch (error) {
+                console.error("Chyba při parsování JSON:", error);
+            }
+        }
+
+        async function completeOrder(orderId) {
+            const response = await fetch('/orders/complete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ orderId })
+            });
+
+            const text = await response.text();
+            try {
+                const data = JSON.parse(text);
+                alert(data.message); // Zobrazení odpovědi z backendu
+
+                if (response.ok) {
+                    location.reload(); // Obnovení stránky, aby se aktualizoval stav objednávky
+                }
+            } catch (error) {
+                console.error("Chyba při parsování JSON:", error);
+            }
+        }
+    </script>
+
+</div>
+
+    <form action="/logout" method="POST">
+        <button class="profileButton" type="submit">Odhlásit se</button>
+    </form>
+</div>
+</body>
+</html>

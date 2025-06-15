@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <title>Procesory</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="IT služby">
+    <meta name="keywords" content="Sestavení PC, Servis PC, IT Poradna">
+    <meta name="author" content="Adam Smolka">
+    <link rel="stylesheet" href="style.css" type="text/css">
+</head>
+
+<body>
+<header>
+    <div id="navbar"></div>
+    <script>
+        fetch("/nav_bar") // Načítá vykreslenou verzi
+            .then(response => response.text())
+            .then(data => document.getElementById("navbar").innerHTML = data);
+    </script>
+</header>
+
+<div id="product_list"></div>
+
+
+<script type="module">
+
+      import { addToCart } from "/cartClient.js";
+
+      fetch("/products")
+        .then(response => response.json())
+        .then(products => {
+        const productList = document.getElementById("product_list");
+        productList.innerHTML = products
+        .filter(product => product.category === "cpu") // Filtrace produktů s kategorií "cpu"
+        .map(product => `
+                    <div class="product">
+                        <h3>${product.name}</h3>
+                        <img class="productImg" src="${product.image_url}" alt="${product.name}">
+                        <p>Cena: ${product.price} Kč</p>
+                        <p>${product.description}</p>
+                        <label for="quantity-${product.id}">Množství:</label>
+                        <input type="number" id="quantity-${product.id}" min="1" value="1">
+                        <button onclick="addToCart('${product.id}', '${product.name}', '${product.price}', document.getElementById('quantity-${product.id}').value)">Přidat do košíku</button>
+                    </div>
+                `).join('');
+    });
+
+</script>
+
+
+</body></html>

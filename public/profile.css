@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Holtwood+One+SC&display=swap');
+
+
+body {
+    color: white;
+    background: rgb(73, 73, 73);
+}
+
+header{
+    font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 30px 10%;
+
+}
+
+
+.logo{
+    cursor: pointer;
+    margin-left: 28%;
+    font-family: 'Holtwood One SC', serif;
+    font-size: 25px;
+    color: orange;
+}
+
+
+.nav_links{
+    list-style: none;
+}
+
+.nav_links li{
+    display: inline-block;
+    padding: 0 20px;
+}
+
+.nav_links li a{
+    transition: all 0.3s ease 0s;
+}
+
+.nav_links li a:hover{
+    color: yellow;
+}
+
+.card {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    max-width: 300px;
+    margin: auto;
+    text-align: center;
+    font-family: arial;
+}
+
+.title {
+    color: grey;
+    font-size: 18px;
+}
+
+button {
+    border: none;
+    outline: 0;
+    max-width: 220px;
+    padding: 3px;
+    color: white;
+    background-color: #000;
+    text-align: center;
+    cursor: pointer;
+
+    font-size: 18px;
+}
+
+a {
+    text-decoration: none;
+    font-size: 22px;
+    color: white;
+}
+
+button:hover, a:hover {
+    opacity: 0.7;
+}
+
+.logout {
+    background: red;
+    color: black;
+}
+

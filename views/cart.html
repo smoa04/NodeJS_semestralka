@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <title>Košík</title>
+    <meta charset="UTF-8">
+    <meta name="description" content="IT služby">
+    <meta name="keywords" content="Sestavení PC, Servis PC, IT Poradna">
+    <meta name="author" content="Adam Smolka">
+    <link rel="stylesheet" href="profile.css" type="text/css">
+</head>
+
+<body>
+<header>
+    <div id="navbar"></div>
+    <script>
+        fetch("/nav_bar")
+            .then(response => response.text())
+            .then(data => document.getElementById("navbar").innerHTML = data);
+    </script>
+</header>
+
+<h2>Váš košík</h2>
+<div id="cart_items"></div>
+
+<script type="module">
+    import {loadCart} from "/cartClient.js";
+    loadCart();
+</script>
+
+<br>
+<br>
+<button id="clear_cart_btn" onclick="clearCart()" style="display: none;">Odstranit vše</button>
+<div id="cart_items"></div>
+<h3 >Celková cena: <span id="total_price">0</span> Kč</h3>
+<button id="checkout_btn" style="display: none;" onclick="window.location.href='/checkout'">
+    Přejít k platbě
+</button>
+
+
+</body>

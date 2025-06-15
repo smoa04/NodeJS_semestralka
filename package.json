@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@hono/node-server": "^1.14.3",
+    "@hono/node-ws": "^1.1.4",
+    "@libsql/client": "^0.15.8",
+    "drizzle-kit": "^0.31.1",
+    "drizzle-orm": "^0.44.1",
+    "ejs": "^3.1.10",
+    "hono": "^4.7.10"
+  }
+}
