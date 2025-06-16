@@ -39,22 +39,15 @@ export const createUser = async (username, password, jmeno, prijmeni, mesto, uli
     return user
 }
 
-export const getUserByUsername = async (username, password) => {
+export const getUserByUsername = async (username) => {
     const user = await db
         .select()
         .from(usersTable)
         .where(eq(usersTable.username, username))
-        .get()
+        .get();
 
-    if (!user) return null
+    return user;
 
-    const hashedPassword = crypto
-        .pbkdf2Sync(password, user.salt, 100000, 64, "sha512")
-        .toString("hex")
-
-    if (user.hashedPassword !== hashedPassword) return null
-
-    return user
 }
 
 export const getUserByToken = async (token) => {

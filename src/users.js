@@ -1,40 +1,38 @@
-import crypto from "crypto"
+import crypto from "crypto";
 import { renderFile } from "ejs";
 import { Hono } from "hono";
-import { createUser, getUserByUsername, getUserByToken} from "./db.js";
+import { createUser, getUserByUsername, getUserByToken } from "./db.js";
 import { setCookie, getCookie } from "hono/cookie";
-import { eq } from "drizzle-orm"
+import { eq } from "drizzle-orm";
 import { db } from "./db.js";
 import { ordersTable } from "./schema.js";
+import Joi from "joi";
+import { JSDOM } from "jsdom";
+import createDOMPurify from "dompurify";
+
+const window = new JSDOM("").window;
+const DOMPurify = createDOMPurify(window);
+
 
 export const usersRouter = new Hono();
 
+// Validace pomocí package Joi
+const userSchema = Joi.object({
+    username: Joi.string().min(3).max(20).required(),
+    password: Joi.string().min(3).required(),
+    jmeno: Joi.string().min(2).max(20).required(),
+    prijmeni: Joi.string().min(2).max(20).required(),
+    mesto: Joi.string().min(2).max(30).required(),
+    ulice: Joi.string().min(2).max(50).required(),
+    tel: Joi.string().pattern(/^[0-9]{9,12}$/).required(),
+    email: Joi.string().email().required(),
+});
 
-// Registrace – obsluha formuláře
+// Registrace – zobrazí HTML formulář
 usersRouter.get("/register", async (c) => {
-    const rendered = await renderFile("views/register.html")
-
-    return c.html(rendered)
-})
-
-//Registrace
-usersRouter.post("/register", async (c) => {
-    const form = await c.req.formData()
-
-    const user = await createUser(
-        form.get("username"),
-        form.get("password"),
-        form.get("jmeno"),
-        form.get("prijmeni"),
-        form.get("mesto"),
-        form.get("ulice"),
-        form.get("tel"),
-        form.get("email")
-    )
-    setCookie(c, "token", user.token)
-
-    return c.redirect("/profile")
-})
+    const rendered = await renderFile("views/register.html");
+    return c.html(rendered);
+});
 
 // Přihlášení – zobrazí HTML formulář
 usersRouter.get("/login", async (c) => {
@@ -42,76 +40,99 @@ usersRouter.get("/login", async (c) => {
     return c.html(rendered);
 });
 
-// Přihlášení – zpracování formuláře s ověřením hesla
+
+// Registrace
+usersRouter.post("/register", async (c) => {
+    const form = await c.req.formData();
+
+    // Sanitizace vstupů
+    const sanitizedData = {};
+    for (const field of ["username", "password", "jmeno", "prijmeni", "mesto", "ulice", "tel", "email"]) {
+        const value = form.get(field);
+        sanitizedData[field] = typeof value === "string" ? DOMPurify.sanitize(value) : "";
+    }
+
+
+    // Validace vstupů
+    const { error } = userSchema.validate(sanitizedData);
+    if (error) return c.json({ message: "Tvůj vstup obsahuje neplatné vstupní údaje! Zkonrtoluj si hlavně email a telefonní číslo." }, 400);
+
+    const user = await createUser(
+        sanitizedData.username,
+        sanitizedData.password,
+        sanitizedData.jmeno,
+        sanitizedData.prijmeni,
+        sanitizedData.mesto,
+        sanitizedData.ulice,
+        sanitizedData.tel,
+        sanitizedData.email
+    );
+
+    setCookie(c, "token", user.token, { httpOnly: true, secure: true });
+
+    return c.redirect("/profile");
+});
+
+// Přihlášení
 usersRouter.post("/login", async (c) => {
     const form = await c.req.formData();
     const username = form.get("username");
     const password = form.get("password");
 
-    const user = await getUserByUsername(username, password);
+    // Ověření, zda `password` existuje a je string
+    if (!password || typeof password !== "string") {
+        return c.json({ message: "Neplatné heslo – musí být textový řetězec." }, 400);
+    }
+
+    const sanitizedUsername = typeof username === "string" ? DOMPurify.sanitize(username) : "";
+
+    // Získání uživatele z DB
+    const user = await getUserByUsername(sanitizedUsername);
     if (!user) {
         return c.json({ message: "Neplatné přihlašovací údaje" }, 401);
     }
 
-    // Kontrola hesla podle db.js
-    const hashedPassword = crypto
-        .pbkdf2Sync(password, user.salt, 100000, 64, "sha512")
-        .toString("hex");
+    // Hashování hesla a porovnání
+    const hashedPassword = crypto.pbkdf2Sync(password, user.salt, 100000, 64, "sha512").toString("hex");
 
     if (user.hashedPassword !== hashedPassword) {
         return c.json({ message: "Neplatné přihlašovací údaje" }, 401);
     }
 
-    setCookie(c, "token", user.token, { httpOnly: true });
-
+    setCookie(c, "token", user.token, { httpOnly: true, secure: true });
     return c.redirect("/profile");
 });
 
-// Middleware pro přístup na Profile jen pro přihlášené uživatele
+
+// Middleware pro ověření uživatele
 const onlyForUsers = async (c, next) => {
     const token = getCookie(c, "token");
-    if (!token) return c.redirect("/login"); // Přesměrování místo 404
+    if (!token) return c.redirect("/login");
 
     const user = await getUserByToken(token);
-    if (!user) return c.redirect("/login"); // Pokud uživatel neexistuje, přesměrování na login
+    if (!user) return c.redirect("/login");
 
     c.set("user", user);
     await next();
 };
 
+// Profil
 usersRouter.get("/profile", onlyForUsers, async (c) => {
     const user = c.get("user");
     let allOrders = [];
 
-    // Pokud je admin, načti všechny nevyřízené (pending) objednávky
     if (user.role === "admin") {
-        allOrders = await db
-            .select()
-            .from(ordersTable)
-            .where(eq(ordersTable.status, "pending"))
-            .all();}
+        allOrders = await db.select().from(ordersTable).where(eq(ordersTable.status, "pending")).all();
+    }
 
-    // Pokud není admin, načti jen objednávky přihlášeného uživatele
     const orders = await db.select().from(ordersTable).where(eq(ordersTable.email, user.email)).all();
     const profilePage = await renderFile("views/profile.html", { user, orders, allOrders });
+
     return c.html(profilePage);
 });
 
-
-usersRouter.get("/checkout", async (c) => {
-    const user = c.get("user"); // Získání přihlášeného uživatele
-    const checkoutPage = await renderFile("views/checkout.html", { user });
-    return c.html(checkoutPage);
-});
-
-
-// Odhlášení + odstanění cookie
+// Odhlášení
 usersRouter.post("/logout", async (c) => {
-    // Odstranění cookie s tokenem
-    setCookie(c, "token", "", { httpOnly: true, maxAge: 0 });
-
-    // Přesměrování na hlavní stránku po odhlášení
+    setCookie(c, "token", "", { httpOnly: true, secure: true, maxAge: 0 });
     return c.redirect("/");
 });
-
-
