@@ -18,13 +18,13 @@ export const usersRouter = new Hono();
 
 // Validace pomocí package Joi
 const userSchema = Joi.object({
-    username: Joi.string().min(3).max(20).required(),
-    password: Joi.string().min(3).required(),
+    username: Joi.string().min(2).max(20).required(),
+    password: Joi.string().min(5).required(),
     jmeno: Joi.string().min(2).max(20).required(),
     prijmeni: Joi.string().min(2).max(20).required(),
-    mesto: Joi.string().min(2).max(30).required(),
-    ulice: Joi.string().min(2).max(50).required(),
-    tel: Joi.string().pattern(/^[0-9]{9,12}$/).required(),
+    mesto: Joi.string().min(2).max(20).required(),
+    ulice: Joi.string().min(2).max(30).required(),
+    tel: Joi.string().pattern(/^\+?[0-9]{9,15}$/).required(),
     email: Joi.string().email().required(),
 });
 
@@ -55,7 +55,8 @@ usersRouter.post("/register", async (c) => {
 
     // Validace vstupů
     const { error } = userSchema.validate(sanitizedData);
-    if (error) return c.json({ message: "Tvůj vstup obsahuje neplatné vstupní údaje! Zkonrtoluj si hlavně email a telefonní číslo." }, 400);
+    if (error) return c.json({ message: "Tvůj vstup obsahuje neplatné vstupní údaje! Zkonrtoluj si hlavně email a telefonní číslo." +
+            " Pro telefonní číslo jsou povoleny pouze čísla, s volitelným znakem + na začátku (např. +420123456789).\" Minimální délka hesla je 5 znaků" }, 400);
 
     const user = await createUser(
         sanitizedData.username,
@@ -73,11 +74,23 @@ usersRouter.post("/register", async (c) => {
     return c.redirect("/profile");
 });
 
+// Validace přihlašovacích údajů pomocí Joi
+const loginSchema = Joi.object({
+    username: Joi.string().min(2).max(20).required(),
+    password: Joi.string().min(5).required(),
+});
+
 // Přihlášení
 usersRouter.post("/login", async (c) => {
     const form = await c.req.formData();
     const username = form.get("username");
     const password = form.get("password");
+
+    // Validace vstupních údajů (username i password)
+    const { error } = loginSchema.validate({ username, password });
+    if (error) {
+        return c.json({ message: "Neplatné přihlašovací údaje." }, 400);
+    }
 
     // Ověření, zda `password` existuje a je string
     if (!password || typeof password !== "string") {
@@ -102,6 +115,7 @@ usersRouter.post("/login", async (c) => {
     setCookie(c, "token", user.token, { httpOnly: true, secure: true });
     return c.redirect("/profile");
 });
+
 
 
 // Middleware pro ověření uživatele
@@ -130,6 +144,13 @@ usersRouter.get("/profile", onlyForUsers, async (c) => {
 
     return c.html(profilePage);
 });
+
+usersRouter.get("/checkout", async (c) => {
+    const user = c.get("user"); // Získání přihlášeného uživatele
+    const checkoutPage = await renderFile("views/checkout.html", { user });
+    return c.html(checkoutPage);
+});
+
 
 // Odhlášení
 usersRouter.post("/logout", async (c) => {

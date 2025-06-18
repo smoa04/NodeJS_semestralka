@@ -6,43 +6,43 @@
     <meta name="keywords" content="Sestavení PC, Servis PC, IT Poradna">
     <meta name="author" content="Adam Smolka">
     <link rel="stylesheet" href="/style.css">
-
 </head>
 <body>
 <div class="container">
     <h1>Registrace</h1>
     <h2>Uživatelský účet</h2>
-    <form action="/register" method="POST">
+    <form id="registrationForm" action="/register" method="POST">
         <label for="username">Uživatelské jméno:</label>
-        <input type="text" id="username" name="username" required> <br>
+        <input type="text" id="username" name="username" minlength="2" maxlength="20" required><br>
 
         <label for="password">Heslo:</label>
-        <input type="password" id="password" name="password" required> <br>
+        <input type="password" id="password" name="password" minlength="5" required><br>
 
-    <h2>Osobní údaje</h2>
+        <h2>Osobní údaje</h2>
 
         <label for="jmeno">Jméno:</label>
-        <input type="text" id="jmeno" name="jmeno" required> <br>
+        <input type="text" id="jmeno" name="jmeno" minlength="2" maxlength="20" required><br>
 
         <label for="prijmeni">Příjmení:</label>
-        <input type="text" id="prijmeni" name="prijmeni" required> <br>
+        <input type="text" id="prijmeni" name="prijmeni" minlength="2" maxlength="20" required><br>
 
         <label for="mesto">Město:</label>
-        <input type="text" id="mesto" name="mesto" required> <br>
+        <input type="text" id="mesto" name="mesto" minlength="2" maxlength="20" required><br>
 
         <label for="ulice">Ulice:</label>
-        <input type="text" id="ulice" name="ulice" required> <br>
+        <input type="text" id="ulice" name="ulice" minlength="2" maxlength="30" required><br>
 
         <label for="tel">Telefonní číslo:</label>
-        <input type="integer" id="tel" name="tel" required> <br>
+        <input type="tel" id="tel" name="tel" pattern="^\+?[0-9]{9,15}$" required><br>
 
         <label for="email">Emailová adresa:</label>
-        <input type="text" id="email" name="email" required> <br>
+        <input type="email" id="email" name="email" required><br>
 
         <button class="register_button" type="submit">Registrovat</button>
     </form>
 
     <p>Už máte účet? <a href="/login.html">Přihlaste se</a></p>
 </div>
+
 </body>
 </html>

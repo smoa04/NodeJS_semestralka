@@ -21,7 +21,6 @@
 
 <h2>Váš košík</h2>
 <div id="cart_items"></div>
-
 <script type="module">
     import {loadCart} from "/cartClient.js";
     loadCart();
@@ -30,7 +29,6 @@
 <br>
 <br>
 <button id="clear_cart_btn" onclick="clearCart()" style="display: none;">Odstranit vše</button>
-<div id="cart_items"></div>
 <h3 >Celková cena: <span id="total_price">0</span> Kč</h3>
 <button id="checkout_btn" style="display: none;" onclick="window.location.href='/checkout'">
     Přejít k platbě

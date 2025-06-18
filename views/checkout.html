@@ -29,22 +29,22 @@
 
 <form action="/createOrder" method="POST">
     <label for="jmeno">Jméno:</label>
-    <input type="text" id="jmeno" name="jmeno" required> <br>
+    <input type="text" id="jmeno" name="jmeno" minlength="2" maxlength="20" required><br>
 
     <label for="prijmeni">Příjmení:</label>
-    <input type="text" id="prijmeni" name="prijmeni" required> <br>
+    <input type="text" id="prijmeni" name="prijmeni" minlength="2" maxlength="20" required><br>
 
     <label for="mesto">Město:</label>
-    <input type="text" id="mesto" name="mesto" required> <br>
+    <input type="text" id="mesto" name="mesto" minlength="2" maxlength="20" required><br>
 
     <label for="ulice">Ulice:</label>
-    <input type="text" id="ulice" name="ulice" required> <br>
+    <input type="text" id="ulice" name="ulice" minlength="2" maxlength="30" required><br>
 
     <label for="tel">Telefonní číslo:</label>
-    <input type="text" id="tel" name="tel" required> <br>
+    <input type="tel" id="tel" name="tel" pattern="^\+?[0-9]{9,15}$" required><br>
 
     <label for="email">Emailová adresa:</label>
-    <input type="text" id="email" name="email" required> <br>
+    <input type="email" id="email" name="email" required><br>
 
     <button type="submit">Odeslat objednávku</button>
 </form>
